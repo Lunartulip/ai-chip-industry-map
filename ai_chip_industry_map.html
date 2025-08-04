@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI芯片产业链价值网络图谱 2025 - 完整版</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            overflow-x: auto;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 2000px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.8;
+            margin: 0;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            background: rgba(255,255,255,0.1);
+            padding: 12px 18px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            min-width: 120px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 12px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        select, input[type="range"] {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 100%;
+        }
+        
+        select option {
+            background: #2a5298;
+            color: white;
+        }
+        
+        input[type="checkbox"] {
+            transform: scale(1.2);
+            margin-right: 8px;
+        }
+        
+        .legend {
+            position: absolute;
+            top: 120px;
+            right: 20px;
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 12px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.2);
+            max-width: 280px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .legend h3 {
+            margin: 0 0 15px 0;
+            font-size: 14px;
+            color: #4ecdc4;
+            text-align: center;
+        }
+        
+        .legend-section {
+            margin-bottom: 15px;
+        }
+        
+        .legend-section h4 {
+            margin: 0 0 8px 0;
+            font-size: 11px;
+            color: #f9ca24;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 4px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 10px;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 8px;
+            border: 1px solid rgba(255,255,255,0.3);
+            flex-shrink: 0;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.95);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.3);
+            max-width: 380px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .tooltip h4 {
+            margin: 0 0 8px 0;
+            color: #4ecdc4;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .tooltip .metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        
+        .tooltip .metric {
+            background: rgba(255,255,255,0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+        }
+        
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        .node:hover {
+            stroke-width: 4px;
+            filter: brightness(1.3) drop-shadow(4px 4px 8px rgba(0,0,0,0.5));
+        }
+        
+        .node-label {
+            font-size: 10px;
+            font-weight: bold;
+            text-anchor: middle;
+            pointer-events: none;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            fill: white;
+        }
+        
+        .value-label {
+            font-size: 8px;
+            text-anchor: middle;
+            pointer-events: none;
+            fill: rgba(255,255,255,0.9);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+        
+        .link {
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+        
+        .link:hover {
+            opacity: 1;
+            stroke-width: 6px;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        .link-label {
+            font-size: 8px;
+            text-anchor: middle;
+            pointer-events: none;
+            fill: rgba(255,255,255,0.9);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+        
+        .flow-arrow {
+            fill: #ffffff;
+            opacity: 0.9;
+        }
+        
+        #chart {
+            border-radius: 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .time-indicator {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .stats-panel {
+            position: absolute;
+            bottom: 120px;
+            left: 20px;
+            background: rgba(0,0,0,0.9);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 11px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            max-width: 300px;
+        }
+        
+        .stats-panel h4 {
+            margin: 0 0 10px 0;
+            color: #4ecdc4;
+            font-size: 12px;
+        }
+        
+        .risk-indicator {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, 
+                #27ae60 0%, 
+                #f39c12 50%, 
+                #e74c3c 100%);
+            bottom: 0;
+            left: 0;
+            border-radius: 0 0 12px 12px;
+        }
+        
+        .instructions {
+            position: absolute;
+            bottom: 120px;
+            right: 20px;
+            background: rgba(0,0,0,0.85);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 10px;
+            max-width: 200px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .instructions h5 {
+            margin: 0 0 8px 0;
+            color: #f9ca24;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 AI芯片全产业链价值网络图谱</h1>
+            <p>基于2025年实际数据 | HBM+CoWoS+国产替代全景 | 节点大小=营收价值 | 连线=资金流动强度</p>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>📅 时间节点</label>
+                <select id="timeSelect">
+                    <option value="2024Q4">2024Q4</option>
+                    <option value="2025Q2" selected>2025Q2</option>
+                    <option value="2025Q4">2025Q4</option>
+                    <option value="2026Q2">2026Q2</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>🔍 显示模式</label>
+                <select id="viewMode">
+                    <option value="全链路">全链路视角</option>
+                    <option value="英伟达生态">英伟达生态</option>
+                    <option value="华为链条">华为产业链</option>
+                    <option value="HBM供应链">HBM供应链</option>
+                    <option value="CoWoS封装">CoWoS封装</option>
+                    <option value="国产替代">国产替代</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>📏 节点缩放</label>
+                <input type="range" id="scaleSlider" min="0.4" max="2.5" step="0.1" value="1">
+            </div>
+            <div class="control-group">
+                <label><input type="checkbox" id="showLabels" checked> 🏷️ 显示标签</label>
+            </div>
+            <div class="control-group">
+                <label><input type="checkbox" id="animationMode"> ⚡ 动画模式</label>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <h3>📊 产业链图例</h3>
+            
+            <div class="legend-section">
+                <h4>节点类别</h4>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff6b6b;"></div>
+                    <span>芯片设计 (>150亿$)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4ecdc4;"></div>
+                    <span>晶圆制造 (80-150亿$)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #45b7d1;"></div>
+                    <span>组装ODM (30-80亿$)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f9ca24;"></div>
+                    <span>关键组件 (10-30亿$)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f0932b;"></div>
+                    <span>HBM存储 (15-50亿$)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #e17055;"></div>
+                    <span>CoWoS封装 (10-35亿$)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #a29bfe;"></div>
+                    <span>AI ASICs (20-60亿$)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #fd79a8;"></div>
+                    <span>国产替代 (5-25亿$)</span>
+                </div>
+            </div>
+            
+            <div class="legend-section">
+                <h4>连线类型</h4>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff6b6b; border-radius: 2px;"></div>
+                    <span>订单流</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4ecdc4; border-radius: 2px;"></div>
+                    <span>现金流</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #45b7d1; border-radius: 2px;"></div>
+                    <span>供应链</span>
+                </div>
+            </div>
+            
+            <div class="legend-section">
+                <h4>风险等级</h4>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #27ae60;"></div>
+                    <span>低风险 (<20%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f39c12;"></div>
+                    <span>中风险 (20-50%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #e74c3c;"></div>
+                    <span>高风险 (>50%)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h5>💡 操作指南</h5>
+            <div>• 滚轮缩放视图</div>
+            <div>• 拖拽移动画布</div>
+            <div>• 点击节点高亮连接</div>
+            <div>• 悬停查看详细信息</div>
+            <div>• 1-4键快速切换时间</div>
+            <div>• R键重置视图</div>
+        </div>
+        
+        <svg id="chart"></svg>
+        
+        <div class="tooltip"></div>
+        
+        <div class="time-indicator" id="timeIndicator">2025Q2</div>
+        
+        <div class="stats-panel" id="statsPanel">
+            <h4>📈 关键指标</h4>
+            <div id="statsContent"></div>
+        </div>
+        
+        <div class="risk-indicator"></div>
+    </div>
+
+    <script>
+        // 这里包含之前的完整JavaScript代码
+        const industryData = {
+            "2024Q4": {
+                nodes: [
+                    {id: "NVIDIA", name: "英伟达", category: "芯片设计", value: 285, x: 500, y: 120, 
+                     details: "AI GPU市场份额82%\nH100主导训练市场\nGB200开始小规模出货\nCoWoS消耗192晶圆", 
+                     metrics: {revenue: "474亿$", marketShare: "82%", cowosWafers: "192", hbmConsume: "70%"}, risk: 0.15},
+                    
+                    {id: "HUAWEI_HiSilicon", name: "华为海思", category: "芯片设计", value: 48, x: 1200, y: 120,
+                     details: "昇腾910B/910C双产品线\n2024全年出货30万颗\n国产替代核心\n面临HBM供应压力", 
+                     metrics: {revenue: "48亿$", shipment: "30万颗", marketShare: "国内60%", risk: "HBM断供"}, risk: 0.45},
+                    
+                    {id: "AMD", name: "AMD", category: "芯片设计", value: 68, x: 200, y: 120,
+                     details: "MI300X开始量产\n数据中心营收增长35%\nCoWoS消耗45晶圆\n挑战NVIDIA垄断地位", 
+                     metrics: {revenue: "68亿$", cowosWafers: "45", growth: "35%", hbmShare: "7%"}, risk: 0.12},
+                    
+                    {id: "SK_HYNIX", name: "SK海力士", category: "HBM存储", value: 42, x: 350, y: 280,
+                     details: "HBM市场份额53.4%\nTSV产能150K/月\nHBM3e 12hi占比70%\n2025出货12.4B Gb", 
+                     metrics: {marketShare: "53.4%", tsvCap: "150K/月", shipment: "12.4B Gb", customers: "NVIDIA主力"}, risk: 0.25},
+                    
+                    {id: "SAMSUNG_MEM", name: "三星存储", category: "HBM存储", value: 38, x: 150, y: 280,
+                     details: "HBM市场份额29.3%\nHBM3e验证延期影响\nTSV产能150K/月\n技术追赶中", 
+                     metrics: {marketShare: "29.3%", tsvCap: "150K/月", shipment: "6.8B Gb", issue: "验证延期"}, risk: 0.35},
+                    
+                    {id: "MICRON", name: "美光", category: "HBM存储", value: 28, x: 550, y: 280,
+                     details: "HBM市场份额19.4%\nTSV产能55K/月\n台湾厂扩产计划\n3Q25 HBM3e 12hi主力", 
+                     metrics: {marketShare: "19.4%", tsvCap: "55K/月", shipment: "4.5B Gb", expansion: "台湾厂"}, risk: 0.20},
+                    
+                    {id: "CHANGXIN", name: "长鑫存储", category: "国产替代", value: 8, x: 1000, y: 280,
+                     details: "国产HBM突破\n良率55%持续改善\nDDR5年底量产\n产能28-30万片/月", 
+                     metrics: {yield: "55%", capacity: "28万片/月", process: "18nm", target: "DDR5量产"}, risk: 0.40},
+                    
+                    {id: "TSMC", name: "台积电", category: "晶圆制造", value: 195, x: 500, y: 400,
+                     details: "先进制程垄断92%\n3nm产能满载\nCoWoS产能290晶圆\nAI芯片占比65%", 
+                     metrics: {marketShare: "92%", cowosTotal: "290晶圆", aiShare: "65%", capacity: "满载"}, risk: 0.18},
+                    
+                    {id: "SMIC", name: "中芯国际", category: "国产替代", value: 26, x: 1200, y: 400,
+                     details: "N+2工艺突破\n华为主要代工厂\n良率持续改善\n产能利用率85%", 
+                     metrics: {process: "N+2", utilization: "85%", client: "华为主力", growth: "稳定"}, risk: 0.35},
+                    
+                    {id: "ASE", name: "日月光", category: "CoWoS封装", value: 32, x: 650, y: 520,
+                     details: "CoWoS封装龙头\n台积电外包30%\n先进封装技术领先\n产能扩张中", 
+                     metrics: {cowosShare: "30%", technology: "CoWoS-S/L", expansion: "进行中", clients: "多元化"}, risk: 0.15},
+                    
+                    {id: "JCET", name: "长电科技", category: "国产替代", value: 12, x: 1000, y: 520,
+                     details: "国产封测龙头\n华为供应商\n先进封装布局\n技术差距缩小", 
+                     metrics: {ranking: "国产第一", client: "华为", technology: "先进封装", gap: "缩小中"}, risk: 0.25},
+                    
+                    {id: "QUANTA", name: "广达", category: "组装ODM", value: 48, x: 200, y: 650,
+                     details: "GB200主力ODM\nQ4出货1.8k机架\n市场份额33%\n液冷技术领先", 
+                     metrics: {shipment: "1.8k机架", marketShare: "33%", technology: "液冷", client: "NVIDIA"}, risk: 0.10},
+                    
+                    {id: "WIWYNN", name: "纬颖", category: "组装ODM", value: 32, x: 350, y: 650,
+                     details: "Oracle长期订单\n500机架/月稳定\nAWS Trainium组装\n营收增长15%", 
+                     metrics: {monthlyOrder: "500机架", client: "Oracle/AWS", growth: "15%", stability: "高"}, risk: 0.12},
+                    
+                    {id: "WISTRON", name: "纬创", category: "组装ODM", value: 35, x: 500, y: 650,
+                     details: "L10方案优势\nQ4出货2k机架\n环比增长6倍\n技术突破", 
+                     metrics: {shipment: "2k机架", growth: "6倍", advantage: "L10方案", breakthrough: "是"}, risk: 0.11},
+                    
+                    {id: "FOXCONN", name: "鸿海", category: "组装ODM", value: 42, x: 650, y: 650,
+                     details: "传统ODM转型\nAI服务器布局\n供应链整合\n多元化策略", 
+                     metrics: {transformation: "AI转型", integration: "供应链", strategy: "多元化", scale: "全球"}, risk: 0.13},
+                    
+                    {id: "UNIMICRON", name: "欣兴电子", category: "关键组件", value: 16, x: 100, y: 800,
+                     details: "PCB/载板龙头\n服务器占比40%\n先进制程配套\n价格上涨20%", 
+                     metrics: {serverShare: "40%", technology: "先进制程", priceUp: "20%", position: "龙头"}, risk: 0.08},
+                    
+                    {id: "DELTA", name: "台达电", category: "关键组件", value: 20, x: 250, y: 800,
+                     details: "电源管理龙头\n液冷电源领先\n市场份额30%\n功率密度提升", 
+                     metrics: {marketShare: "30%", technology: "液冷电源", powerDensity: "提升", leadership: "是"}, risk: 0.09},
+                    
+                    {id: "AURAS", name: "奇鋐科技", category: "关键组件", value: 14, x: 400, y: 800,
+                     details: "液冷散热方案\n渗透率55%\n单机架64GPU\n供应紧张", 
+                     metrics: {penetration: "55%", capacity: "64GPU/机架", supply: "紧张", technology: "液冷"}, risk: 0.22},
+                    
+                    {id: "GOOGLE_TPU", name: "Google TPU", category: "AI ASICs", value: 25, x: 800, y: 120,
+                     details: "TPU v4/v5部署\nHBM消耗10%\nCoWoS需求增长\n自研芯片战略", 
+                     metrics: {hbmShare: "10%", tpuGen: "v4/v5", cowos: "增长", strategy: "自研"}, risk: 0.15},
+                    
+                    {id: "AWS_TRAINIUM", name: "AWS Trainium", category: "AI ASICs", value: 18, x: 800, y: 200,
+                     details: "Trainium2量产\nHBM消耗8%\n纬颖组装\n110万颗产能", 
+                     metrics: {hbmShare: "8%", generation: "Trainium2", assembly: "纬颖", capacity: "110万颗"}, risk: 0.18},
+                    
+                    {id: "CLOUD_PROVIDERS", name: "云服务商", category: "占位节点", value: 8, x: 1400, y: 800,
+                     details: "AWS/Azure/阿里云\n最终需求方\nCapEx增长50%\n议价能力强", 
+                     metrics: {capexGrowth: "50%", bargainPower: "强", demand: "集中", scale: "超大"}, risk: 0.12}
+                ],
+                
+                links: [
+                    {source: "SK_HYNIX", target: "NVIDIA", flow: 75, type: "供应链", label: "HBM3e主供"},
+                    {source: "SAMSUNG_MEM", target: "NVIDIA", flow: 35, type: "供应链", label: "HBM3备供"},
+                    {source: "MICRON", target: "AMD", flow: 25, type: "供应链", label: "HBM3"},
+                    {source: "CHANGXIN", target: "HUAWEI_HiSilicon", flow: 15, type: "供应链", label: "国产HBM"},
+                    {source: "NVIDIA", target: "TSMC", flow: 92, type: "订单流", label: "5nm/3nm晶圆"},
+                    {source: "HUAWEI_HiSilicon", target: "SMIC", flow: 48, type: "订单流", label: "N+2工艺"},
+                    {source: "AMD", target: "TSMC", flow: 28, type: "订单流", label: "7nm晶圆"},
+                    {source: "TSMC", target: "ASE", flow: 65, type: "现金流", label: "CoWoS外包"},
+                    {source: "SMIC", target: "JCET", flow: 32, type: "现金流", label: "国产封装"},
+                    {source: "NVIDIA", target: "QUANTA", flow: 38, type: "订单流", label: "GB200机架"},
+                    {source: "NVIDIA", target: "WIWYNN", flow: 32, type: "订单流", label: "标准服务器"},
+                    {source: "NVIDIA", target: "WISTRON", flow: 35, type: "订单流", label: "L10方案"},
+                    {source: "NVIDIA", target: "FOXCONN", flow: 25, type: "订单流", label: "传统AI服务器"},
+                    {source: "GOOGLE_TPU", target: "TSMC", flow: 18, type: "订单流", label: "TPU芯片"},
+                    {source: "AWS_TRAINIUM", target: "WIWYNN", flow: 22, type: "订单流", label: "Trainium组装"},
+                    {source: "UNIMICRON", target: "QUANTA", flow: 16, type: "供应链", label: "高端PCB"},
+                    {source: "DELTA", target: "WIWYNN", flow: 20, type: "供应链", label: "液冷电源"},
+                    {source: "AURAS", target: "WISTRON", flow: 14, type: "供应链", label: "散热方案"},
+                    {source: "QUANTA", target: "CLOUD_PROVIDERS", flow: 8, type: "现金流", label: "云厂商交付"}
+                ]
+            },
+            
+            "2025Q2": {
+                nodes: [
+                    {id: "NVIDIA", name: "英伟达", category: "芯片设计", value: 328, x: 500, y: 120,
+                     details: "数据中心营收$126亿/季\nGB200规模量产\nCoWoS消耗415晶圆\nHBM需求暴增", 
+                     metrics: {quarterly: "126亿$", cowosWafers: "415", hbmDemand: "暴增", domination: "巩固"}, risk: 0.12},
+                    
+                    {id: "HUAWEI_HiSilicon", name: "华为海思", category: "芯片设计", value: 55, x: 1200, y: 120,
+                     details: "910B出货16万颗\n910C出货2.7万颗\n全年目标下调至70万\n模型迭代延迟影响", 
+                     metrics: {b910: "16万颗", c910: "2.7万颗", target: "70万颗", issue: "需求疲软"}, risk: 0.52},
+                    
+                    {id: "AMD", name: "AMD", category: "芯片设计", value: 78, x: 200, y: 120,
+                     details: "MI300X放量\nCoWoS消耗52晶圆\n云厂商采购增加\n市场份额稳定", 
+                     metrics: {product: "MI300X", cowosWafers: "52", cloudAdoption: "增加", share: "稳定"}, risk: 0.10},
+                    
+                    {id: "SK_HYNIX", name: "SK海力士", category: "HBM存储", value: 48, x: 350, y: 280,
+                     details: "HBM供应紧张\n对华为断供风险\n价格上涨25%\nTSV产能满载", 
+                     metrics: {supply: "紧张", riskChina: "断供", priceUp: "25%", utilization: "满载"}, risk: 0.65},
+                    
+                    {id: "SAMSUNG_MEM", name: "三星存储", category: "HBM存储", value: 42, x: 150, y: 280,
+                     details: "HBM3e验证通过\n与NVIDIA深度绑定\n产能扩张加速\n份额回升", 
+                     metrics: {validation: "通过", binding: "深度", expansion: "加速", recovery: "是"}, risk: 0.25},
+                    
+                    {id: "MICRON", name: "美光", category: "HBM存储", value: 32, x: 550, y: 280,
+                     details: "台湾厂投产\nHBM3e 12hi成主力\n供应链多元化\n成本优势显现", 
+                     metrics: {taiwanFab: "投产", mainProduct: "HBM3e 12hi", diversify: "是", costAdv: "显现"}, risk: 0.18},
+                    
+                    {id: "CHANGXIN", name: "长鑫存储", category: "国产替代", value: 12, x: 1000, y: 280,
+                     details: "良率提升至75%\nDDR5样品测试通过\n散热问题解决\n产能爬坡中", 
+                     metrics: {yield: "75%", ddr5: "测试通过", thermal: "解决", rampUp: "进行中"}, risk: 0.32},
+                    
+                    {id: "TSMC", name: "台积电", category: "晶圆制造", value: 212, x: 500, y: 400,
+                     details: "CoWoS产能659晶圆\n3nm产能1337K WPM\nAI芯片占比70%\n封装瓶颈缓解", 
+                     metrics: {cowosTotal: "659晶圆", capacity3nm: "1337K", aiShare: "70%", bottleneck: "缓解"}, risk: 0.15},
+                    
+                    {id: "SMIC", name: "中芯国际", category: "国产替代", value: 29, x: 1200, y: 400,
+                     details: "N+2良率改善\n华为订单稳定\n产能利用率90%\nN+1工艺准备", 
+                     metrics: {yieldImprove: "是", huaweiOrder: "稳定", utilization: "90%", nextGen: "N+1准备"}, risk: 0.30},
+                    
+                    {id: "ASE", name: "日月光", category: "CoWoS封装", value: 38, x: 650, y: 520,
+                     details: "CoWoS外包份额30%\n先进封装扩产\n供需平衡改善\n新技术导入", 
+                     metrics: {cowosShare: "30%", expansion: "进行中", balance: "改善", newTech: "导入"}, risk: 0.12},
+                    
+                    {id: "JCET", name: "长电科技", category: "国产替代", value: 16, x: 1000, y: 520,
+                     details: "华为订单增长\n技术差距缩小\n扩产计划启动\n国产化提升", 
+                     metrics: {orderGrowth: "是", techGap: "缩小", expansion: "启动", localization: "提升"}, risk: 0.22},
+                    
+                    {id: "QUANTA", name: "广达", category: "组装ODM", value: 58, x: 200, y: 650,
+                     details: "GB200出货2.4k机架\n产能瓶颈缓解\n液冷技术成熟\n龙头地位巩固", 
+                     metrics: {gb200: "2.4k机架", bottleneck: "缓解", liquidCool: "成熟", leadership: "巩固"}, risk: 0.08},
+                    
+                    {id: "WIWYNN", name: "纬颖", category: "组装ODM", value: 42, x: 350, y: 650,
+                     details: "Oracle订单执行\nAWS Trainium放量\n月产能提升至600\n技术优势明显", 
+                     metrics: {oracle: "执行中", trainium: "放量", capacity: "600/月", advantage: "明显"}, risk: 0.10},
+                    
+                    {id: "WISTRON", name: "纬创", category: "组装ODM", value: 48, x: 500, y: 650,
+                     details: "L10优势持续\n出货量增长6倍\n市场份额提升\nL11准备中", 
+                     metrics: {l10Advantage: "持续", growth: "6倍", shareUp: "是", l11: "准备中"}, risk: 0.09},
+                    
+                    {id: "FOXCONN", name: "鸿海", category: "组装ODM", value: 52, x: 650, y: 650,
+                     details: "AI转型加速\n供应链整合\n多客户策略\n产能快速扩张", 
+                     metrics: {aiTransform: "加速", integration: "深化", multiClient: "是", expansion: "快速"}, risk: 0.11},
+                    
+                    {id: "UNIMICRON", name: "欣兴电子", category: "关键组件", value: 22, x: 100, y: 800,
+                     details: "高端PCB需求旺盛\n价格上涨30%\n产能满载\n技术升级", 
+                     metrics: {demand: "旺盛", priceUp: "30%", utilization: "满载", upgrade: "进行中"}, risk: 0.06},
+                    
+                    {id: "DELTA", name: "台达电", category: "关键组件", value: 26, x: 250, y: 800,
+                     details: "液冷电源爆发\n功率密度提升\n市场份额扩大\n技术门槛高", 
+                     metrics: {liquidPower: "爆发", powerDensity: "提升", shareGain: "是", barrier: "高"}, risk: 0.07},
+                    
+                    {id: "AURAS", name: "奇鋐科技", category: "关键组件", value: 19, x: 400, y: 800,
+                     details: "液冷渗透率70%\n单机架GPU翻倍\n供应链紧张\n价格上涨", 
+                     metrics: {penetration: "70%", doubleGPU: "是", supply: "紧张", priceUp: "是"}, risk: 0.25},
+                    
+                    {id: "GOOGLE_TPU", name: "Google TPU", category: "AI ASICs", value: 32, x: 800, y: 120,
+                     details: "TPU v6部署\nHBM需求增长\nCoWoS消耗96晶圆\n自研芯片加速", 
+                     metrics: {tpuGen: "v6", hbmGrowth: "是", cowos: "96晶圆", acceleration: "是"}, risk: 0.12},
+                    
+                    {id: "AWS_TRAINIUM", name: "AWS Trainium", category: "AI ASICs", value: 28, x: 800, y: 200,
+                     details: "Trainium2规模量产\nCoWoS消耗72晶圆\n纬颖独家组装\n性能提升显著", 
+                     metrics: {production: "规模量产", cowos: "72晶圆", assembly: "纬颖独家", performance: "显著提升"}, risk: 0.15},
+                    
+                    {id: "CLOUD_PROVIDERS", name: "云服务商", category: "占位节点", value: 12, x: 1400, y: 800,
+                     details: "CapEx大幅增长\n需求集中化\n议价能力增强\nAI投资加码", 
+                     metrics: {capexGrowth: "大幅", concentration: "是", bargainPower: "增强", aiInvest: "加码"}, risk: 0.10}
+                ],
+                
+                links: [
+                    {source: "SK_HYNIX", target: "NVIDIA", flow: 85, type: "供应链", label: "HBM3e紧张供应"},
+                    {source: "SAMSUNG_MEM", target: "NVIDIA", flow: 45, type: "供应链", label: "HBM3e验证通过"},
+                    {source: "MICRON", target: "AMD", flow: 32, type: "供应链", label: "HBM3稳定供应"},
+                    {source: "CHANGXIN", target: "HUAWEI_HiSilicon", flow: 22, type: "供应链", label: "国产HBM突破"},
+                    {source: "NVIDIA", target: "TSMC", flow: 105, type: "订单流", label: "产能预定满载"},
+                    {source: "HUAWEI_HiSilicon", target: "SMIC", flow: 55, type: "订单流", label: "长期合作深化"},
+                    {source: "AMD", target: "TSMC", flow: 38, type: "订单流", label: "MI300X放量"},
+                    {source: "TSMC", target: "ASE", flow: 78, type: "现金流", label: "CoWoS外包增长"},
+                    {source: "SMIC", target: "JCET", flow: 38, type: "现金流", label: "国产封装提升"},
+                    {source: "NVIDIA", target: "QUANTA", flow: 48, type: "订单流", label: "GB200主力"},
+                    {source: "NVIDIA", target: "WIWYNN", flow: 42, type: "订单流", label: "多元化订单"},
+                    {source: "NVIDIA", target: "WISTRON", flow: 48, type: "订单流", label: "L10优势放大"},
+                    {source: "NVIDIA", target: "FOXCONN", flow: 35, type: "订单流", label: "AI转型受益"},
+                    {source: "GOOGLE_TPU", target: "TSMC", flow: 28, type: "订单流", label: "TPU v6量产"},
+                    {source: "AWS_TRAINIUM", target: "WIWYNN", flow: 32, type: "订单流", label: "Trainium2放量"},
+                    {source: "UNIMICRON", target: "QUANTA", flow: 22, type: "供应链", label: "高端PCB旺盛"},
+                    {source: "DELTA", target: "WIWYNN", flow: 26, type: "供应链", label: "液冷电源爆发"},
+                    {source: "AURAS", target: "WISTRON", flow: 19, type: "供应链", label: "散热需求翻倍"},
+                    {source: "QUANTA", target: "CLOUD_PROVIDERS", flow: 12, type: "现金流", label: "云厂商集中采购"}
+                ]
+            },
+            
+            "2025Q4": {
+                nodes: [
+                    {id: "NVIDIA", name: "英伟达", category: "芯片设计", value: 395, x: 500, y: 120,
+                     details: "GB200规模量产\nCoWoS消耗538晶圆\nRubin架构发布\n市场地位巩固", 
+                     metrics: {gb200: "规模量产", cowos: "538晶圆", rubin: "发布", dominance: "巩固"}, risk: 0.10},
+                    
+                    {id: "HUAWEI_HiSilicon", name: "华为海思", category: "芯片设计", value: 62, x: 1200, y: 120,
+                     details: "全年70万颗达成\n910C性能提升\n集群能力改善\n国产替代加速", 
+                     metrics: {annual: "70万颗", performance: "提升", cluster: "改善", replacement: "加速"}, risk: 0.48},
+                    
+                    {id: "AMD", name: "AMD", category: "芯片设计", value: 92, x: 200, y: 120,
+                     details: "MI400系列发布\nCoWoS消耗61晶圆\n市场份额稳定22%\n云厂商认可", 
+                     metrics: {mi400: "发布", cowos: "61晶圆", share: "22%", cloudAccept: "是"}, risk: 0.08},
+                    
+                    {id: "SK_HYNIX", name: "SK海力士", category: "HBM存储", value: 55, x: 350, y: 280,
+                     details: "HBM4开发加速\n供应链稳定\n价格趋于合理\n垄断地位巩固", 
+                     metrics: {hbm4: "开发中", supply: "稳定", price: "合理", monopoly: "巩固"}, risk: 0.20},
+                    
+                    {id: "SAMSUNG_MEM", name: "三星存储", category: "HBM存储", value: 52, x: 150, y: 280,
+                     details: "HBM3e全面量产\n技术追赶成功\n产能大幅扩张\n份额回升", 
+                     metrics: {hbm3e: "全面量产", catchUp: "成功", expansion: "大幅", recovery: "明显"}, risk: 0.15},
+                    
+                    {id: "MICRON", name: "美光", category: "HBM存储", value: 38, x: 550, y: 280,
+                     details: "台湾产能满载\nHBM4准备就绪\n成本优势明显\n供应链完善", 
+                     metrics: {taiwanCap: "满载", hbm4Ready: "是", costAdv: "明显", supply: "完善"}, risk: 0.12},
+                    
+                    {id: "CHANGXIN", name: "长鑫存储", category: "国产替代", value: 18, x: 1000, y: 280,
+                     details: "DDR5正式量产\n良率达标85%\n产能30万片/月\n国产化突破", 
+                     metrics: {ddr5: "量产", yield: "85%", capacity: "30万片", breakthrough: "是"}, risk: 0.25},
+                    
+                    {id: "TSMC", name: "台积电", category: "晶圆制造", value: 235, x: 500, y: 400,
+                     details: "CoWoS产能836晶圆\n2nm准备就绪\n先进制程垄断\n供需平衡", 
+                     metrics: {cowos: "836晶圆", node2nm: "就绪", monopoly: "持续", balance: "平衡"}, risk: 0.12},
+                    
+                    {id: "SMIC", name: "中芯国际", category: "国产替代", value: 35, x: 1200, y: 400,
+                     details: "N+1工艺量产\n产能利用率95%\n技术差距缩小\n国产替代核心", 
+                     metrics: {nPlus1: "量产", utilization: "95%", gapNarrow: "是", coreRole: "是"}, risk: 0.25},
+                    
+                    {id: "ASE", name: "日月光", category: "CoWoS封装", value: 45, x: 650, y: 520,
+                     details: "CoWoS产能充足\n新技术量产\n供需平衡改善\n客户多元化", 
+                     metrics: {capacity: "充足", newTech: "量产", balance: "改善", diversify: "是"}, risk: 0.08},
+                    
+                    {id: "JCET", name: "长电科技", category: "国产替代", value: 22, x: 1000, y: 520,
+                     details: "技术差距显著缩小\n产能扩张完成\n订单饱满\n国产化率提升", 
+                     metrics: {techGap: "显著缩小", expansion: "完成", orderFull: "是", localization: "提升"}, risk: 0.18},
+                    
+                    {id: "QUANTA", name: "广达", category: "组装ODM", value: 72, x: 200, y: 650,
+                     details: "全年12k机架\n产能瓶颈完全解决\n技术领先\n龙头地位稳固", 
+                     metrics: {annual: "12k机架", bottleneck: "解决", techLead: "是", leadership: "稳固"}, risk: 0.06},
+                    
+                    {id: "WIWYNN", name: "纬颖", category: "组装ODM", value: 55, x: 350, y: 650,
+                     details: "Oracle项目完成\n新客户拓展\n技术优势扩大\n盈利能力提升", 
+                     metrics: {oracle: "完成", newClient: "拓展", advantage: "扩大", profit: "提升"}, risk: 0.07},
+                    
+                    {id: "WISTRON", name: "纬创", category: "组装ODM", value: 62, x: 500, y: 650,
+                     details: "L11方案成熟\n全年8k机架\n市场份额稳固\n技术突破", 
+                     metrics: {l11: "成熟", annual: "8k机架", share: "稳固", breakthrough: "是"}, risk: 0.07},
+                    
+                    {id: "FOXCONN", name: "鸿海", category: "组装ODM", value: 65, x: 650, y: 650,
+                     details: "AI转型成功\n全球化布局\n供应链优势\n多元化战略", 
+                     metrics: {transform: "成功", global: "布局", supplyAdv: "是", diversify: "战略"}, risk: 0.08},
+                    
+                    {id: "UNIMICRON", name: "欣兴电子", category: "关键组件", value: 28, x: 100, y: 800,
+                     details: "高端PCB龙头\n技术持续升级\n供需平衡\n盈利稳定", 
+                     metrics: {leader: "高端PCB", upgrade: "持续", balance: "平衡", profit: "稳定"}, risk: 0.05},
+                    
+                    {id: "DELTA", name: "台达电", category: "关键组件", value: 32, x: 250, y: 800,
+                     details: "液冷标准制定\n全球化部署\n技术门槛巩固\n市场扩大", 
+                     metrics: {standard: "制定", global: "部署", barrier: "巩固", marketExp: "是"}, risk: 0.06},
+                    
+                    {id: "AURAS", name: "奇鋐科技", category: "关键组件", value: 25, x: 400, y: 800,
+                     details: "液冷渗透率85%\n产能匹配需求\n技术标准化\n供应链稳定", 
+                     metrics: {penetration: "85%", capacity: "匹配", standard: "化", supply: "稳定"}, risk: 0.15},
+                    
+                    {id: "GOOGLE_TPU", name: "Google TPU", category: "AI ASICs", value: 42, x: 800, y: 120,
+                     details: "TPU v7部署\nCoWoS消耗130晶圆\n自研芯片成熟\n成本优势显现", 
+                     metrics: {tpuGen: "v7", cowos: "130晶圆", maturity: "是", costAdv: "显现"}, risk: 0.10},
+                    
+                    {id: "AWS_TRAINIUM", name: "AWS Trainium", category: "AI ASICs", value: 35, x: 800, y: 200,
+                     details: "Trainium3准备\nCoWoS消耗40晶圆\n性能大幅提升\n成本控制优秀", 
+                     metrics: {trainium3: "准备", cowos: "40晶圆", performance: "大幅提升", cost: "控制优秀"}, risk: 0.12},
+                    
+                    {id: "CLOUD_PROVIDERS", name: "云服务商", category: "占位节点", value: 18, x: 1400, y: 800,
+                     details: "AI基础设施完善\n需求增长稳定\n议价能力平衡\n投资回报显现", 
+                     metrics: {infrastructure: "完善", growth: "稳定", bargain: "平衡", roi: "显现"}, risk: 0.08}
+                ],
+                
+                links: [
+                    {source: "SK_HYNIX", target: "NVIDIA", flow: 95, type: "供应链", label: "HBM供应稳定"},
+                    {source: "SAMSUNG_MEM", target: "NVIDIA", flow: 65, type: "供应链", label: "份额回升"},
+                    {source: "MICRON", target: "AMD", flow: 42, type: "供应链", label: "长期合作"},
+                    {source: "CHANGXIN", target: "HUAWEI_HiSilicon", flow: 32, type: "供应链", label: "国产化成功"},
+                    {source: "NVIDIA", target: "TSMC", flow: 115, type: "订单流", label: "长期产能预定"},
+                    {source: "HUAWEI_HiSilicon", target: "SMIC", flow: 62, type: "订单流", label: "战略合作"},
+                    {source: "AMD", target: "TSMC", flow: 48, type: "订单流", label: "稳定供应"},
+                    {source: "TSMC", target: "ASE", flow: 88, type: "现金流", label: "CoWoS成熟外包"},
+                    {source: "SMIC", target: "JCET", flow: 45, type: "现金流", label: "国产配套完善"},
+                    {source: "NVIDIA", target: "QUANTA", flow: 58, type: "订单流", label: "主力供应商"},
+                    {source: "NVIDIA", target: "WIWYNN", flow: 55, type: "订单流", label: "技术合作"},
+                    {source: "NVIDIA", target: "WISTRON", flow: 62, type: "订单流", label: "创新方案"},
+                    {source: "NVIDIA", target: "FOXCONN", flow: 45, type: "订单流", label: "全球化部署"},
+                    {source: "GOOGLE_TPU", target: "TSMC", flow: 38, type: "订单流", label: "TPU v7量产"},
+                    {source: "AWS_TRAINIUM", target: "WIWYNN", flow: 42, type: "订单流", label: "独家合作"},
+                    {source: "UNIMICRON", target: "QUANTA", flow: 28, type: "供应链", label: "PCB标准化"},
+                    {source: "DELTA", target: "WIWYNN", flow: 32, type: "供应链", label: "电源全球化"},
+                    {source: "AURAS", target: "WISTRON", flow: 25, type: "供应链", label: "散热普及"},
+                    {source: "QUANTA", target: "CLOUD_PROVIDERS", flow: 18, type: "现金流", label: "成熟交付"}
+                ]
+            },
+            
+            "2026Q2": {
+                nodes: [
+                    {id: "NVIDIA", name: "英伟达", category: "芯片设计", value: 450, x: 500, y: 120,
+                     details: "Rubin架构量产\nCoWoS消耗670晶圆\nHBM4开始采用\nCPO技术导入", 
+                     metrics: {rubin: "量产", cowos: "670晶圆", hbm4: "采用", cpo: "导入"}, risk: 0.08},
+                    
+                    {id: "HUAWEI_HiSilicon", name: "华为海思", category: "芯片设计", value: 72, x: 1200, y: 120,
+                     details: "910D架构发布\n年出货100万颗\n集群性能大幅提升\n国产生态完善", 
+                     metrics: {arch910d: "发布", shipment: "100万颗", cluster: "大幅提升", ecosystem: "完善"}, risk: 0.40},
+                    
+                    {id: "AMD", name: "AMD", category: "芯片设计", value: 108, x: 200, y: 120,
+                     details: "MI450系列量产\nCoWoS-L大规模采用\n市场份额提升至25%\n云厂商深度合作", 
+                     metrics: {mi450: "量产", cowosL: "大规模", share: "25%", cloudDeep: "是"}, risk: 0.06},
+                    
+                    {id: "SK_HYNIX", name: "SK海力士", category: "HBM存储", value: 68, x: 350, y: 280,
+                     details: "HBM4规模量产\n溢价15%仍供不应求\nTSV产能200K/月\n技术领先巩固", 
+                     metrics: {hbm4: "规模量产", premium: "15%", tsvCap: "200K", techLead: "巩固"}, risk: 0.15},
+                    
+                    {id: "SAMSUNG_MEM", name: "三星存储", category: "HBM存储", value: 62, x: 150, y: 280,
+                     details: "HBM4量产追赶\n市场份额稳定30%\n新工厂投产\n竞争力恢复", 
+                     metrics: {hbm4CatchUp: "是", share: "30%", newFab: "投产", competitive: "恢复"}, risk: 0.12},
+                    
+                    {id: "MICRON", name: "美光", category: "HBM存储", value: 45, x: 550, y: 280,
+                     details: "HBM4稳定供应\n成本控制优秀\n市场份额20%\n供应链韧性强", 
+                     metrics: {hbm4Supply: "稳定", costControl: "优秀", share: "20%", resilience: "强"}, risk: 0.10},
+                    
+                    {id: "CHANGXIN", name: "长鑫存储", category: "国产替代", value: 28, x: 1000, y: 280,
+                     details: "HBM2E量产成功\nDDR5全球市占5%\n产能50万片/月\n技术快速追赶", 
+                     metrics: {hbm2e: "量产", ddr5Share: "5%", capacity: "50万片", catchUp: "快速"}, risk: 0.20},
+                    
+                    {id: "TSMC", name: "台积电", category: "晶圆制造", value: 285, x: 500, y: 400,
+                     details: "2nm量产就绪\nCoWoS产能1082晶圆\n先进制程垄断95%\nAI芯片占比75%", 
+                     metrics: {node2nm: "就绪", cowos: "1082晶圆", monopoly: "95%", aiShare: "75%"}, risk: 0.10},
+                    
+                    {id: "SMIC", name: "中芯国际", category: "国产替代", value: 42, x: 1200, y: 400,
+                     details: "5nm工艺突破\n产能利用率满载\n国产设备占比30%\n技术跨越式发展", 
+                     metrics: {node5nm: "突破", utilization: "满载", domesticEq: "30%", leap: "是"}, risk: 0.20},
+                    
+                    {id: "ASE", name: "日月光", category: "CoWoS封装", value: 55, x: 650, y: 520,
+                     details: "CoWoS-L技术成熟\nSoIC技术导入\n产能充分满足需求\n技术门槛提升", 
+                     metrics: {cowosL: "成熟", soic: "导入", capacity: "充分", barrier: "提升"}, risk: 0.06},
+                    
+                    {id: "JCET", name: "长电科技", category: "国产替代", value: 32, x: 1000, y: 520,
+                     details: "先进封装技术突破\n与国际先进差距缩小至1代\n产能大幅扩张\n国产化率40%", 
+                     metrics: {advPackage: "突破", gap: "1代", expansion: "大幅", localization: "40%"}, risk: 0.15},
+                    
+                    {id: "QUANTA", name: "广达", category: "组装ODM", value: 88, x: 200, y: 650,
+                     details: "年产20k机架\n液冷技术标准制定者\n全球化部署完成\n行业龙头地位巩固", 
+                     metrics: {annual: "20k机架", liquidStd: "制定者", global: "完成", leadership: "巩固"}, risk: 0.05},
+                    
+                    {id: "WIWYNN", name: "纬颖", category: "组装ODM", value: 68, x: 350, y: 650,
+                     details: "技术创新引领\n客户结构优化\n盈利能力行业领先\n新兴市场拓展", 
+                     metrics: {innovation: "引领", structure: "优化", profit: "领先", newMarket: "拓展"}, risk: 0.06},
+                    
+                    {id: "WISTRON", name: "纬创", category: "组装ODM", value: 78, x: 500, y: 650,
+                     details: "L12革命性方案\n年产15k机架\n技术差异化成功\n市场份额稳定", 
+                     metrics: {l12: "革命性", annual: "15k机架", differentiate: "成功", share: "稳定"}, risk: 0.06},
+                    
+                    {id: "FOXCONN", name: "鸿海", category: "组装ODM", value: 82, x: 650, y: 650,
+                     details: "AI+制造融合\n供应链数字化完成\n全球产能优化\n成本控制优势", 
+                     metrics: {aiManufacture: "融合", digitize: "完成", optimize: "全球", costAdv: "是"}, risk: 0.07},
+                    
+                    {id: "UNIMICRON", name: "欣兴电子", category: "关键组件", value: 38, x: 100, y: 800,
+                     details: "PCB技术全球领先\n先进制程全覆盖\n供应链本土化完成\n盈利能力稳定", 
+                     metrics: {techLead: "全球", coverage: "全覆盖", localize: "完成", profit: "稳定"}, risk: 0.04},
+                    
+                    {id: "DELTA", name: "台达电", category: "关键组件", value: 42, x: 250, y: 800,
+                     details: "电源效率突破95%\n液冷+风冷混合方案\n全球标准制定参与\n技术壁垒深厚", 
+                     metrics: {efficiency: "95%", hybrid: "方案", globalStd: "参与", barrier: "深厚"}, risk: 0.05},
+                    
+                    {id: "AURAS", name: "奇鋐科技", category: "关键组件", value: 35, x: 400, y: 800,
+                     details: "液冷渗透率95%\n浸没式冷却技术\n数据中心全覆盖\n技术标准主导", 
+                     metrics: {penetration: "95%", immersion: "技术", coverage: "全覆盖", standard: "主导"}, risk: 0.08},
+                    
+                    {id: "GOOGLE_TPU", name: "Google TPU", category: "AI ASICs", value: 58, x: 800, y: 120,
+                     details: "TPU v8架构\nCoWoS消耗160晶圆\n推理专用优化\n成本效率最优", 
+                     metrics: {tpuGen: "v8", cowos: "160晶圆", inference: "优化", efficiency: "最优"}, risk: 0.08},
+                    
+                    {id: "AWS_TRAINIUM", name: "AWS Trainium", category: "AI ASICs", value: 48, x: 800, y: 200,
+                     details: "Trainium4发布\n训练+推理一体化\nCoWoS消耗55晶圆\n性能功耗比领先", 
+                     metrics: {trainium4: "发布", unified: "一体化", cowos: "55晶圆", efficiency: "领先"}, risk: 0.10},
+                    
+                    {id: "META_MTIA", name: "Meta MTIA", category: "AI ASICs", value: 22, x: 950, y: 120,
+                     details: "MTIA v3推理芯片\n推理成本降低50%\nCoWoS需求25晶圆\n社交AI优化", 
+                     metrics: {mtiaV3: "推理", costDown: "50%", cowos: "25晶圆", socialAI: "优化"}, risk: 0.25},
+                    
+                    {id: "APPLE_AI", name: "Apple AI芯片", category: "AI ASICs", value: 18, x: 950, y: 200,
+                     details: "M系列AI加速\n端侧AI专用\n台积电3nm独占\n隐私计算优化", 
+                     metrics: {mSeries: "AI加速", edge: "专用", tsmc3nm: "独占", privacy: "优化"}, risk: 0.12},
+                    
+                    {id: "EDA_TOOLS", name: "EDA工具", category: "占位节点", value: 8, x: 50, y: 400,
+                     details: "AI设计工具革命\n自动化设计70%\n云端EDA服务\n设计效率10倍提升", 
+                     metrics: {aiRevolution: "是", automation: "70%", cloudEDA: "服务", efficiency: "10倍"}, risk: 0.55},
+                    
+                    {id: "CLOUD_PROVIDERS", name: "云服务商", category: "占位节点", value: 28, x: 1400, y: 800,
+                     details: "AI服务全面商用\nCapEx增长放缓至20%\n边缘计算布局\nAI盈利模式成熟", 
+                     metrics: {aiCommercial: "全面", capexGrowth: "20%", edgeCompute: "布局", profit: "成熟"}, risk: 0.06}
+                ],
+                
+                links: [
+                    {source: "SK_HYNIX", target: "NVIDIA", flow: 108, type: "供应链", label: "HBM4主供"},
+                    {source: "SAMSUNG_MEM", target: "NVIDIA", flow: 78, type: "供应链", label: "HBM4竞争"},
+                    {source: "MICRON", target: "AMD", flow: 52, type: "供应链", label: "稳定伙伴"},
+                    {source: "CHANGXIN", target: "HUAWEI_HiSilicon", flow: 42, type: "供应链", label: "国产突破"},
+                    
+                    {source: "NVIDIA", target: "TSMC", flow: 135, type: "订单流", label: "2nm首发客户"},
+                    {source: "HUAWEI_HiSilicon", target: "SMIC", flow: 72, type: "订单流", label: "5nm量产"},
+                    {source: "AMD", target: "TSMC", flow: 65, type: "订单流", label: "CoWoS-L主力"},
+                    
+                    {source: "TSMC", target: "ASE", flow: 98, type: "现金流", label: "CoWoS-L外包"},
+                    {source: "SMIC", target: "JCET", flow: 55, type: "现金流", label: "先进封装"},
+                    
+                    {source: "NVIDIA", target: "QUANTA", flow: 68, type: "订单流", label: "Rubin主力"},
+                    {source: "NVIDIA", target: "WIWYNN", flow: 68, type: "订单流", label: "技术伙伴"},
+                    {source: "NVIDIA", target: "WISTRON", flow: 78, type: "订单流", label: "L12创新"},
+                    {source: "NVIDIA", target: "FOXCONN", flow: 58, type: "订单流", label: "全球化"},
+                    
+                    {source: "GOOGLE_TPU", target: "TSMC", flow: 48, type: "订单流", label: "TPU v8"},
+                    {source: "AWS_TRAINIUM", target: "WIWYNN", flow: 52, type: "订单流", label: "Trainium4"},
+                    {source: "META_MTIA", target: "TSMC", flow: 22, type: "订单流", label: "MTIA v3"},
+                    {source: "APPLE_AI", target: "TSMC", flow: 18, type: "订单流", label: "M系列AI"},
+                    
+                    {source: "UNIMICRON", target: "QUANTA", flow: 38, type: "供应链", label: "先进PCB"},
+                    {source: "DELTA", target: "WIWYNN", flow: 42, type: "供应链", label: "混合冷却"},
+                    {source: "AURAS", target: "WISTRON", flow: 35, type: "供应链", label: "浸没冷却"},
+                    
+                    {source: "QUANTA", target: "CLOUD_PROVIDERS", flow: 28, type: "现金流", label: "AI服务交付"}
+                ]
+            }
+        };
+
+        // 图表配置
+        const config = {
+            width: 1800,
+            height: 900,
+            nodeScale: {min: 25, max: 140},
+            linkScale: {min: 1, max: 10},
+            colors: {
+                "芯片设计": "#ff6b6b",
+                "晶圆制造": "#4ecdc4", 
+                "组装ODM": "#45b7d1",
+                "关键组件": "#f9ca24",
+                "HBM存储": "#f0932b",
+                "CoWoS封装": "#e17055",
+                "AI ASICs": "#a29bfe",
+                "国产替代": "#fd79a8",
+                "占位节点": "#95afc0"
+            },
+            linkColors: {
+                "订单流": "#ff6b6b",
+                "现金流": "#4ecdc4",
+                "供应链": "#45b7d1"
+            }
+        };
+
+        // 创建SVG
+        const svg = d3.select("#chart")
+            .attr("width", config.width)
+            .attr("height", config.height);
+
+        // 添加定义区域用于箭头和渐变
+        const defs = svg.append("defs");
+        
+        // 创建箭头标记
+        Object.keys(config.linkColors).forEach(type => {
+            defs.append("marker")
+                .attr("id", `arrow-${type}`)
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 28)
+                .attr("refY", 0)
+                .attr("markerWidth", 8)
+                .attr("markerHeight", 8)
+                .attr("orient", "auto")
+                .append("path")
+                .attr("d", "M0,-5L10,0L0,5")
+                .attr("fill", config.linkColors[type])
+                .attr("class", "flow-arrow");
+        });
+
+        // 添加渐变定义
+        Object.keys(config.colors).forEach((category, index) => {
+            const gradient = defs.append("radialGradient")
+                .attr("id", `gradient-${category.replace(/\s+/g, '')}`)
+                .attr("cx", "30%")
+                .attr("cy", "30%");
+            
+            gradient.append("stop")
+                .attr("offset", "0%")
+                .attr("stop-color", d3.color(config.colors[category]).brighter(0.5));
+            
+            gradient.append("stop")
+                .attr("offset", "100%")
+                .attr("stop-color", config.colors[category]);
+        });
+
+        // 创建容器组
+        const container = svg.append("g");
+        const linksGroup = container.append("g").attr("class", "links");
+        const nodesGroup = container.append("g").attr("class", "nodes");
+        const labelsGroup = container.append("g").attr("class", "labels");
+
+        // 缩放和拖拽
+        const zoom = d3.zoom()
+            .scaleExtent([0.2, 4])
+            .on("zoom", (event) => {
+                container.attr("transform", event.transform);
+            });
+        
+        svg.call(zoom);
+
+        // 工具提示
+        const tooltip = d3.select(".tooltip");
+
+        // 比例尺
+        const nodeScale = d3.scaleSqrt()
+            .range([config.nodeScale.min, config.nodeScale.max]);
+        
+        const linkScale = d3.scaleLinear()
+            .range([config.linkScale.min, config.linkScale.max]);
+
+        // 当前数据和状态
+        let currentData = industryData["2025Q2"];
+        let currentScale = 1;
+        let showLabels = true;
+        let animationMode = false;
+
+        // 初始化图表
+        function initChart() {
+            updateScales();
+            renderChart();
+            updateStats();
+        }
+
+        function updateScales() {
+            const values = currentData.nodes.map(d => d.value);
+            const flows = currentData.links.map(d => d.flow);
+            
+            nodeScale.domain([0, d3.max(values)]);
+            linkScale.domain([0, d3.max(flows)]);
+        }
+
+        function renderChart() {
+            renderLinks();
+            renderNodes();
+            renderLabels();
+        }
+
+        function renderLinks() {
+            const links = linksGroup.selectAll(".link")
+                .data(currentData.links, d => `${d.source}-${d.target}`);
+
+            links.exit()
+                .transition()
+                .duration(animationMode ? 500 : 0)
+                .style("opacity", 0)
+                .remove();
+
+            const linksEnter = links.enter()
+                .append("line")
+                .attr("class", "link")
+                .style("opacity", 0);
+
+            const linksUpdate = linksEnter.merge(links);
+
+            linksUpdate
+                .transition()
+                .duration(animationMode ? 800 : 0)
+                .attr("x1", d => getNodeById(d.source).x)
+                .attr("y1", d => getNodeById(d.source).y)
+                .attr("x2", d => getNodeById(d.target).x)
+                .attr("y2", d => getNodeById(d.target).y)
+                .attr("stroke", d => config.linkColors[d.type] || "#999")
+                .attr("stroke-width", d => linkScale(d.flow))
+                .attr("marker-end", d => `url(#arrow-${d.type})`)
+                .style("opacity", 0.7);
+
+            linksUpdate
+                .on("mouseover", function(event, d) {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .style("opacity", 1)
+                        .attr("stroke-width", d => linkScale(d.flow) * 1.5);
+                    
+                    showTooltip(event, `
+                        <h4>${d.label}</h4>
+                        <div class="metrics">
+                            <div class="metric">来源: ${getNodeById(d.source).name}</div>
+                            <div class="metric">目标: ${getNodeById(d.target).name}</div>
+                            <div class="metric">类型: ${d.type}</div>
+                            <div class="metric">强度: ${d.flow}</div>
+                        </div>
+                    `);
+                })
+                .on("mouseout", function(event, d) {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .style("opacity", 0.7)
+                        .attr("stroke-width", d => linkScale(d.flow));
+                    hideTooltip();
+                });
+
+            // 链接标签
+            const linkLabels = labelsGroup.selectAll(".link-label")
+                .data(showLabels ? currentData.links : [], d => `${d.source}-${d.target}-label`);
+
+            linkLabels.exit().remove();
+
+            const linkLabelsEnter = linkLabels.enter()
+                .append("text")
+                .attr("class", "link-label");
+
+            const linkLabelsUpdate = linkLabelsEnter.merge(linkLabels);
+
+            linkLabelsUpdate
+                .transition()
+                .duration(animationMode ? 800 : 0)
+                .attr("x", d => (getNodeById(d.source).x + getNodeById(d.target).x) / 2)
+                .attr("y", d => (getNodeById(d.source).y + getNodeById(d.target).y) / 2 - 5)
+                .text(d => d.label);
+        }
+
+        function renderNodes() {
+            const nodes = nodesGroup.selectAll(".node")
+                .data(currentData.nodes, d => d.id);
+
+            nodes.exit()
+                .transition()
+                .duration(animationMode ? 500 : 0)
+                .attr("r", 0)
+                .style("opacity", 0)
+                .remove();
+
+            const nodesEnter = nodes.enter()
+                .append("circle")
+                .attr("class", "node")
+                .attr("r", 0)
+                .style("opacity", 0);
+
+            const nodesUpdate = nodesEnter.merge(nodes);
+
+            nodesUpdate
+                .transition()
+                .duration(animationMode ? 1000 : 0)
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y)
+                .attr("r", d => nodeScale(d.value) * currentScale)
+                .attr("fill", d => `url(#gradient-${d.category.replace(/\s+/g, '')})`)
+                .attr("stroke", d => {
+                    if (d.risk > 0.5) return "#e74c3c";
+                    if (d.risk > 0.2) return "#f39c12";
+                    return "#27ae60";
+                })
+                .attr("stroke-width", d => d.risk > 0.5 ? 4 : 2)
+                .style("opacity", d => Math.max(0.7, 1 - d.risk * 0.3));
+
+            nodesUpdate
+                .on("mouseover", function(event, d) {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr("r", nodeScale(d.value) * currentScale * 1.3)
+                        .style("filter", "brightness(1.3)");
+                    
+                    const metricsHtml = Object.entries(d.metrics)
+                        .map(([key, value]) => `<div class="metric">${key}: ${value}</div>`)
+                        .join('');
+                    
+                    showTooltip(event, `
+                        <h4>${d.name}</h4>
+                        <div class="metrics">
+                            <div class="metric">类别: ${d.category}</div>
+                            <div class="metric">价值量: $${d.value}亿</div>
+                            <div class="metric">风险等级: ${(d.risk * 100).toFixed(0)}%</div>
+                        </div>
+                        <div class="metrics">${metricsHtml}</div>
+                        <div style="margin-top:10px; font-size:11px; line-height:1.4; border-top:1px solid rgba(255,255,255,0.2); padding-top:8px;">
+                            ${d.details.replace(/\n/g, '<br>')}
+                        </div>
+                    `);
+                })
+                .on("mouseout", function(event, d) {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr("r", nodeScale(d.value) * currentScale)
+                        .style("filter", "none");
+                    hideTooltip();
+                })
+                .on("click", function(event, d) {
+                    highlightConnections(d.id);
+                });
+        }
+
+        function renderLabels() {
+            const nodeLabels = labelsGroup.selectAll(".node-label")
+                .data(showLabels ? currentData.nodes : [], d => d.id);
+
+            nodeLabels.exit().remove();
+
+            const nodeLabelsEnter = nodeLabels.enter()
+                .append("text")
+                .attr("class", "node-label");
+
+            const nodeLabelsUpdate = nodeLabelsEnter.merge(nodeLabels);
+
+            nodeLabelsUpdate
+                .transition()
+                .duration(animationMode ? 800 : 0)
+                .attr("x", d => d.x)
+                .attr("y", d => d.y - nodeScale(d.value) * currentScale - 8)
+                .text(d => d.name)
+                .style("font-size", d => Math.max(8, Math.min(12, nodeScale(d.value) * currentScale / 8)) + "px");
+
+            const valueLabels = labelsGroup.selectAll(".value-label")
+                .data(showLabels ? currentData.nodes : [], d => d.id + "-value");
+
+            valueLabels.exit().remove();
+
+            const valueLabelsEnter = valueLabels.enter()
+                .append("text")
+                .attr("class", "value-label");
+
+            const valueLabelsUpdate = valueLabelsEnter.merge(valueLabels);
+
+            valueLabelsUpdate
+                .transition()
+                .duration(animationMode ? 800 : 0)
+                .attr("x", d => d.x)
+                .attr("y", d => d.y + 4)
+                .text(d => `$${d.value}B`)
+                .style("font-size", d => Math.max(7, Math.min(10, nodeScale(d.value) * currentScale / 10)) + "px");
+        }
+
+        function highlightConnections(nodeId) {
+            linksGroup.selectAll(".link")
+                .transition()
+                .duration(300)
+                .style("opacity", 0.2)
+                .attr("stroke-width", d => linkScale(d.flow));
+
+            linksGroup.selectAll(".link")
+                .filter(d => d.source === nodeId || d.target === nodeId)
+                .transition()
+                .duration(300)
+                .style("opacity", 1)
+                .attr("stroke-width", d => linkScale(d.flow) * 2);
+
+            setTimeout(() => {
+                linksGroup.selectAll(".link")
+                    .transition()
+                    .duration(500)
+                    .style("opacity", 0.7)
+                    .attr("stroke-width", d => linkScale(d.flow));
+            }, 3000);
+        }
+
+        function updateStats() {
+            const stats = calculateStats(currentData);
+            const statsContent = d3.select("#statsContent");
+            
+            statsContent.html(`
+                <div>节点总数: ${stats.totalNodes}</div>
+                <div>连接总数: ${stats.totalLinks}</div>
+                <div>总价值量: $${stats.totalValue.toFixed(0)}B</div>
+                <div>平均风险: ${(stats.avgRisk * 100).toFixed(1)}%</div>
+                <div>高风险节点: ${stats.highRiskNodes}</div>
+                <div>最大流量: ${stats.maxFlow}</div>
+                <div>HBM消耗: ${stats.hmbConsumption}</div>
+                <div>CoWoS需求: ${stats.cowosTotal}</div>
+            `);
+        }
+
+        function calculateStats(data) {
+            const totalNodes = data.nodes.length;
+            const totalLinks = data.links.length;
+            const totalValue = data.nodes.reduce((sum, n) => sum + n.value, 0);
+            const avgRisk = data.nodes.reduce((sum, n) => sum + n.risk, 0) / totalNodes;
+            const highRiskNodes = data.nodes.filter(n => n.risk > 0.5).length;
+            const maxFlow = Math.max(...data.links.map(l => l.flow));
+            
+            const hmbNodes = data.nodes.filter(n => n.category === "HBM存储");
+            const hmbConsumption = hmbNodes.reduce((sum, n) => sum + n.value, 0);
+            
+            const cowosNodes = data.nodes.filter(n => n.metrics && n.metrics.cowosWafers);
+            let cowosTotal = 0;
+            cowosNodes.forEach(n => {
+                const wafers = n.metrics.cowosWafers;
+                if (wafers && typeof wafers === 'string') {
+                    const num = parseInt(wafers.replace(/[^0-9]/g, ''));
+                    if (!isNaN(num)) cowosTotal += num;
+                }
+            });
+            
+            return {
+                totalNodes, totalLinks, totalValue, avgRisk, highRiskNodes, maxFlow,
+                hmbConsumption: hmbConsumption.toFixed(1) + "B$",
+                cowosTotal: cowosTotal ? cowosTotal + "晶圆" : "N/A"
+            };
+        }
+
+        function getNodeById(id) {
+            return currentData.nodes.find(n => n.id === id);
+        }
+
+        function showTooltip(event, content) {
+            tooltip
+                .transition()
+                .duration(200)
+                .style("opacity", 1);
+            
+            tooltip
+                .html(content)
+                .style("left", (event.pageX + 15) + "px")
+                .style("top", (event.pageY - 10) + "px");
+        }
+
+        function hideTooltip() {
+            tooltip
+                .transition()
+                .duration(300)
+                .style("opacity", 0);
+        }
+
+        // 事件监听器
+        d3.select("#timeSelect").on("change", function() {
+            const selectedTime = this.value;
+            currentData = industryData[selectedTime];
+            d3.select("#timeIndicator").text(selectedTime);
+            updateScales();
+            renderChart();
+            updateStats();
+        });
+
+        d3.select("#viewMode").on("change", function() {
+            const mode = this.value;
+            filterByMode(mode);
+        });
+
+        d3.select("#scaleSlider").on("input", function() {
+            currentScale = +this.value;
+            renderChart();
+        });
+
+        d3.select("#showLabels").on("change", function() {
+            showLabels = this.checked;
+            renderChart();
+        });
+
+        d3.select("#animationMode").on("change", function() {
+            animationMode = this.checked;
+        });
+
+        function filterByMode(mode) {
+            let filteredNodes, filteredLinks;
+            
+            switch(mode) {
+                case "英伟达生态":
+                    filteredNodes = currentData.nodes.filter(n => 
+                        ["NVIDIA", "TSMC", "ASE", "SK_HYNIX", "SAMSUNG_MEM", "MICRON",
+                         "QUANTA", "WIWYNN", "WISTRON", "FOXCONN",
+                         "DELTA", "AURAS", "UNIMICRON"].includes(n.id)
+                    );
+                    break;
+                case "华为链条":
+                    filteredNodes = currentData.nodes.filter(n => 
+                        ["HUAWEI_HiSilicon", "SMIC", "JCET", "CHANGXIN"].includes(n.id)
+                    );
+                    break;
+                case "HBM供应链":
+                    filteredNodes = currentData.nodes.filter(n => 
+                        n.category === "HBM存储" || 
+                        ["NVIDIA", "AMD", "HUAWEI_HiSilicon", "GOOGLE_TPU", "AWS_TRAINIUM"].includes(n.id)
+                    );
+                    break;
+                case "CoWoS封装":
+                    filteredNodes = currentData.nodes.filter(n => 
+                        n.category === "CoWoS封装" || 
+                        n.category === "晶圆制造" ||
+                        ["NVIDIA", "AMD", "GOOGLE_TPU", "AWS_TRAINIUM"].includes(n.id)
+                    );
+                    break;
+                case "国产替代":
+                    filteredNodes = currentData.nodes.filter(n => 
+                        n.category === "国产替代" || 
+                        ["HUAWEI_HiSilicon"].includes(n.id)
+                    );
+                    break;
+                default:
+                    filteredNodes = currentData.nodes;
+            }
+            
+            const nodeIds = new Set(filteredNodes.map(n => n.id));
+            filteredLinks = currentData.links.filter(l => 
+                nodeIds.has(l.source) && nodeIds.has(l.target)
+            );
+            
+            const originalData = currentData;
+            currentData = {
+                nodes: filteredNodes,
+                links: filteredLinks
+            };
+            
+            renderChart();
+            updateStats();
+            
+            setTimeout(() => {
+                currentData = originalData;
+                renderChart();
+                updateStats();
+            }, 5000);
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            switch(e.key) {
+                case '1':
+                    d3.select("#timeSelect").property("value", "2024Q4").dispatch("change");
+                    break;
+                case '2':
+                    d3.select("#timeSelect").property("value", "2025Q2").dispatch("change");
+                    break;
+                case '3':
+                    d3.select("#timeSelect").property("value", "2025Q4").dispatch("change");
+                    break;
+                case '4':
+                    d3.select("#timeSelect").property("value", "2026Q2").dispatch("change");
+                    break;
+                case 'r':
+                    svg.transition().duration(750).call(
+                        zoom.transform,
+                        d3.zoomIdentity
+                    );
+                    break;
+            }
+        });
+
+        // 初始化
+        initChart();
+
+    </script>
+</body>
+</html>
+                    
