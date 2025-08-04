@@ -314,7 +314,7 @@
         
         <div class="controls">
             <div class="control-group">
-                <label>📅 时间节点</label>
+                <label for="timeselect">📅 时间节点</label>
                 <select id="timeSelect">
                     <option value="2024Q4">2024Q4</option>
                     <option value="2025Q2" selected>2025Q2</option>
@@ -323,7 +323,7 @@
                 </select>
             </div>
             <div class="control-group">
-                <label>🔍 显示模式</label>
+                <label for="viewMode">🔍 显示模式</label>
                 <select id="viewMode">
                     <option value="全链路">全链路视角</option>
                     <option value="英伟达生态">英伟达生态</option>
@@ -334,14 +334,16 @@
                 </select>
             </div>
             <div class="control-group">
-                <label>📏 节点缩放</label>
+                <label for="scalwSlider">📏 节点缩放</label>
                 <input type="range" id="scaleSlider" min="0.4" max="2.5" step="0.1" value="1">
             </div>
             <div class="control-group">
-                <label><input type="checkbox" id="showLabels" checked> 🏷️ 显示标签</label>
+                <input type="checkbox" id="showLabels" checked> 
+                <label for="showLabels">🏷️ 显示标签</label>
             </div>
             <div class="control-group">
-                <label><input type="checkbox" id="animationMode"> ⚡ 动画模式</label>
+                <input type="checkbox" id="animationMode"> 
+                <label for="animationMode">⚡ 动画模式</label>
             </div>
         </div>
         
@@ -1418,4 +1420,5 @@
     </script>
 </body>
 </html>
+
                     
